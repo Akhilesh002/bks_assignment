@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
             const PageHeader(
               dataList: Data.data,
             ),
-            const Flexible(
+            Flexible(
               child: WebChart(
                 webFooterData: Data.chartFooter,
               ),

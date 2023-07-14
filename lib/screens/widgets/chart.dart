@@ -1,12 +1,15 @@
 import 'package:bks_assignment/base/constant.dart';
+import 'package:bks_assignment/controller/chart_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 
 class WebChart extends StatelessWidget {
-  const WebChart({super.key, required this.webFooterData});
+  WebChart({super.key, required this.webFooterData});
 
   final List<Map<String, dynamic>> webFooterData;
+
+  final thisController = Get.put(WebChartController());
 
   @override
   Widget build(BuildContext context) {
@@ -18,20 +21,30 @@ class WebChart extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.only(bottom: 6),
-              width: Get.width,
-              height: Get.height * 0.30,
-              decoration: BoxDecoration(
-                  // color: Colors.blue,
-                  borderRadius: BorderRadius.circular(10)),
-              child: InAppWebView(
-                initialUrlRequest: URLRequest(
-                  url: Uri.parse(
-                    Constant.MAP_URL,
+            Stack(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  width: Get.width,
+                  height: Get.height * 0.30,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: InAppWebView(
+                    onProgressChanged: (controller, progress) {
+                      if (progress == 100) {
+                        thisController.showLoader.value = false;
+                      }
+                    },
+                    initialUrlRequest: URLRequest(
+                      url: Uri.parse(
+                        Constant.MAP_URL,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                buildLoader()
+              ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -41,6 +54,23 @@ class WebChart extends StatelessWidget {
         ).paddingAll(10),
       ),
     );
+  }
+
+  Widget buildLoader() {
+    return Obx(() {
+      final loader = thisController.showLoader.value;
+      return loader
+          ? const Positioned(
+              left: 0,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : const SizedBox.shrink();
+    });
   }
 
   List<Widget> getFooterWidget(
@@ -54,9 +84,10 @@ class WebChart extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(footerData[i]["title"], style: const TextStyle(
-                color: Colors.black45
-              ),).paddingOnly(bottom: 2),
+              Text(
+                footerData[i]["title"],
+                style: const TextStyle(color: Colors.black45),
+              ).paddingOnly(bottom: 2),
               Text(
                 footerData[i]["value"],
                 style: const TextStyle(
